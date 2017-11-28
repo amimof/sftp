@@ -1,0 +1,13 @@
+Protocol 2
+UseDNS no
+PermitRootLogin no
+X11Forwarding no
+AllowTcpForwarding no
+PasswordAuthentication no
+Subsystem sftp internal-sftp
+ForceCommand internal-sftp
+ChrootDirectory %h
+HostKey /etc/ssh/host_keys/rsa.key
+HostKey /etc/ssh/host_keys/dsa.key
+HostKey /etc/ssh/host_keys/ecdsa.key
+HostKey /etc/ssh/host_keys/ed25519.key
