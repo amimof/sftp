@@ -36,7 +36,21 @@ $ docker run \
 $ docker run \
     -p 22:22 \
     -e SSH_USERNAME=sftpuser \
-    -e SSH_GENERATE_HOSTKEYS=false \
     -v ~/.ssh/id_rsa.pub:/home/sftpuser/.ssh/id_rsa.pub \
     amimof/sftp:latest
 ```
+
+### Specify SSH host keys
+SSH host keys will be automatically generated and change between container restarts unless specified otherwise with the `SSH_GENERATE_HOSTKEYS` environment variable. To avoid `man-in-the-middle attack` warnings you can mount your own host keys into the container.
+```
+$ docker run \
+    -p 22:22 \
+    -e SSH_USERNAME=sftpuser \
+    -e SSH_PASSWORD=notsosecure \
+    -e SSH_GENERATE_HOSTKEYS=false \
+    -v ~/ssh_host_ed25519_key:/etc/ssh/host_keys/ssh_host_ed25519_key \
+    -v ~/ssh_host_rsa_key:/etc/ssh/host_keys/ssh_host_rsa_key \
+    amimof/sftp:latest
+```
+
+**NOTE!** The host keys are placed in the non-default location of `/etc/ssh/host_keys/` so that you can mount your host keys using a `Kubernetes Secret`. If the secret is mounted on the host key's *default* location, `/etc/ssh/`, all other files in that directory would be overwritten, including `sshd_config` which would prevent the ssh server from starting correctly.

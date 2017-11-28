@@ -67,10 +67,17 @@ mkdir /etc/ssh/host_keys/
 # Generate host keys by default
 if [ "${SSH_GENERATE_HOSTKEYS,,}" == "true" ]; then
   echo "INFO: Generating host keys"
-  ssh-keygen -f /etc/ssh/host_keys/rsa.key -q -N '' -t rsa
-  ssh-keygen -f /etc/ssh/host_keys/dsa.key -q -N '' -t dsa
-  ssh-keygen -f /etc/ssh/host_keys/ecdsa.key -q -N '' -t ecdsa
-  ssh-keygen -f /etc/ssh/host_keys/ed25519.key -q -N '' -t ed25519
+  ssh-keygen -f /etc/ssh/host_keys/ssh_host_rsa_key -q -N '' -t rsa
+  ln -s /etc/ssh/host_keys/ssh_host_rsa_key /etc/ssh/ssh_host_rsa_key
+
+  ssh-keygen -f /etc/ssh/host_keys/ssh_host_dsa_key -q -N '' -t dsa
+  ln -s /etc/ssh/host_keys/ssh_host_dsa_key /etc/ssh/ssh_host_dsa_key
+
+  ssh-keygen -f /etc/ssh/host_keys/ssh_host_ecdsa_key -q -N '' -t ecdsa
+  ln -s /etc/ssh/host_keys/ssh_host_ecdsa_key /etc/ssh/ssh_host_ecdsa_key
+
+  ssh-keygen -f /etc/ssh/host_keys/ssh_host_ed25519_key -q -N '' -t ed25519
+  ln -s /etc/ssh/host_keys/ssh_host_ed25519_key /etc/ssh/ssh_host_ed25519_key
 fi
 
 echo "INFO: Setting permissions on host keys"

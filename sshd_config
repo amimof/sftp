@@ -4,10 +4,11 @@ PermitRootLogin no
 X11Forwarding no
 AllowTcpForwarding no
 PasswordAuthentication no
+PubkeyAuthentication yes
 Subsystem sftp internal-sftp
 ForceCommand internal-sftp
 ChrootDirectory %h
-HostKey /etc/ssh/host_keys/rsa.key
-HostKey /etc/ssh/host_keys/dsa.key
-HostKey /etc/ssh/host_keys/ecdsa.key
-HostKey /etc/ssh/host_keys/ed25519.key
+HostKey /etc/ssh/host_keys/ssh_host_rsa_key
+HostKey /etc/ssh/host_keys/ssh_host_dsa_key
+HostKey /etc/ssh/host_keys/ssh_host_ecdsa_key
+HostKey /etc/ssh/host_keys/ssh_host_ed25519_key
