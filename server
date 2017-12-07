@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# Check if username is set
+if [ -z "$SSH_USERNAME" ]; then
+  echo "INFO: Username not set. Using default"
+  SSH_USERNAME="sftpuser"
+fi
+
+# Check if uid/guid is set
+if [ -z "$SSH_USERID" ]; then
+  echo "INFO: UID/GUID not set. Using default"
+  SSH_USERID=1337
+fi
+
+# Check if data directory is set
+if [ -z "$SSH_DATADIR_NAME" ]; then
+  echo "INFO: Data dir not set. Using default"
+  SSH_DATADIR_NAME="data"
+fi
+
+# Check if generate hostkeys is set
+if [ -z "$SSH_GENERATE_HOSTKEYS" ]; then
+  echo "INFO: Generate hostkeys not set. Using default"
+  SSH_GENERATE_HOSTKEYS="true"
+fi
+
+# Create group
+echo "INFO: Adding group ${SSH_USERNAME}"
+addgroup -g $SSH_USERID $SSH_USERNAME
+
+# Create user
+echo "INFO: Adding user ${SSH_USERNAME}"
+adduser -D -u $SSH_USERID -G $SSH_USERNAME $SSH_USERNAME
+
+# Set password if provided
+if [ -z "$SSH_PASSWORD" ]; then
+  echo "INFO: Password not provided for user ${SSH_USERNAME}"
+  passwd -u $SSH_USERNAME
+else
+  echo "INFO: Setting password for user ${SSH_USERNAME}"
+  echo $SSH_USERNAME:$SSH_PASSWORD | chpasswd > /dev/null
+  sed -i "s/PasswordAuthentication\s[^ ]*/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+fi
+
+# Change ownership and permissions of users home root dir
+echo "INFO: Change ownership and permissions of home directory"
+chown root:root /home/$SSH_USERNAME
+chmod 755 /home/$SSH_USERNAME
+
+# Create data dir and set read/write permission for user
+echo "INFO: Create and set permissions on data dir"
+mkdir -p /home/$SSH_USERNAME/$SSH_DATADIR_NAME
+chown $SSH_USERNAME /home/$SSH_USERNAME/$SSH_DATADIR_NAME
+chmod 777 /home/$SSH_USERNAME/$SSH_DATADIR_NAME
+
+# Add SSH keys to authorized_keys with valid permissions
+if [ -d /home/$SSH_USERNAME/.ssh/keys ]; then
+  echo "INFO: Set ownership and permission of .ssh directory"
+  chown -R root:root /home/$SSH_USERNAME/.ssh
+  chmod 755 /home/$SSH_USERNAME/.ssh
+
+  echo "INFO: Add SSH keys to authorized_keys with valid permissions"
+  cat /home/$SSH_USERNAME/.ssh/keys/* >> /home/$SSH_USERNAME/.ssh/authorized_keys
+  chown $SSH_USERNAME:root /home/$SSH_USERNAME/.ssh/authorized_keys
+  chmod 644 /home/$SSH_USERNAME/.ssh/authorized_keys
+fi
+
+# Generate host keys by default
+if [ "${SSH_GENERATE_HOSTKEYS,,}" == "true" ]; then
+  echo "INFO: Generating host keys"
+  ssh-keygen -f /etc/ssh/host_keys/ssh_host_rsa_key -q -N '' -t rsa
+  ln -s /etc/ssh/host_keys/ssh_host_rsa_key /etc/ssh/ssh_host_rsa_key
+
+  ssh-keygen -f /etc/ssh/host_keys/ssh_host_dsa_key -q -N '' -t dsa
+  ln -s /etc/ssh/host_keys/ssh_host_dsa_key /etc/ssh/ssh_host_dsa_key
+
+  ssh-keygen -f /etc/ssh/host_keys/ssh_host_ecdsa_key -q -N '' -t ecdsa
+  ln -s /etc/ssh/host_keys/ssh_host_ecdsa_key /etc/ssh/ssh_host_ecdsa_key
+
+  ssh-keygen -f /etc/ssh/host_keys/ssh_host_ed25519_key -q -N '' -t ed25519
+  ln -s /etc/ssh/host_keys/ssh_host_ed25519_key /etc/ssh/ssh_host_ed25519_key
+fi
+
+echo "INFO: Setting permissions on host keys"
+chmod 600 /etc/ssh/host_keys/*
+
+# Check for loglevel and replace line in sshd_config
+if [ -n "$LOGLEVEL" ]; then
+  echo "INFO: Setting LogLevel to ${LOGLEVEL}"
+  sed -i "s/LogLevel\s[^ ]*/LogLevel ${LOGLEVEL}/g" /etc/ssh/sshd_config
+fi
+
+# Run sshd in debug mode
+if [ -z "$DEBUG" ]; then
+        exec /usr/sbin/sshd -D -e
+else
+        echo "WARN: Debug mode enabled!"
+        exec /usr/sbin/sshd -D -e -d
+fi
