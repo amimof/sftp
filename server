@@ -68,6 +68,9 @@ fi
 # Generate host keys by default
 if [ "${SSH_GENERATE_HOSTKEYS,,}" == "true" ]; then
   echo "INFO: Generating host keys"
+
+  mkdir -p /etc/ssh/host_keys/
+
   ssh-keygen -f /etc/ssh/host_keys/ssh_host_rsa_key -q -N '' -t rsa
   ln -s /etc/ssh/host_keys/ssh_host_rsa_key /etc/ssh/ssh_host_rsa_key
 
