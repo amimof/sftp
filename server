@@ -55,14 +55,15 @@ chmod 777 /home/$SSH_USERNAME/$SSH_DATADIR_NAME
 
 # Add SSH keys to authorized_keys with valid permissions
 if [ -d /home/$SSH_USERNAME/.ssh/keys ]; then
+  echo "INFO: Set ownership and permission of .ssh directory"
+  chown -R root:root /home/$SSH_USERNAME/.ssh
+  chmod 755 /home/$SSH_USERNAME/.ssh
+
   echo "INFO: Add SSH keys to authorized_keys with valid permissions"
   cat /home/$SSH_USERNAME/.ssh/keys/* >> /home/$SSH_USERNAME/.ssh/authorized_keys
-  chown $SSH_USERNAME /home/$SSH_USERNAME/.ssh/authorized_keys
-  chmod 600 /home/$SSH_USERNAME/.ssh/authorized_keys
+  chown $SSH_USERNAME:root /home/$SSH_USERNAME/.ssh/authorized_keys
+  chmod 644 /home/$SSH_USERNAME/.ssh/authorized_keys
 fi
-
-# Create the directory holding the host keys
-mkdir /etc/ssh/host_keys/
 
 # Generate host keys by default
 if [ "${SSH_GENERATE_HOSTKEYS,,}" == "true" ]; then
@@ -82,14 +83,6 @@ fi
 
 echo "INFO: Setting permissions on host keys"
 chmod 600 /etc/ssh/host_keys/*
-
-# echo "INFO: Generate private/public keys for user ${SSH_USERNAME}"
-# mkdir /home/$SSH_USERNAME/.ssh
-# ssh-keygen -b 2048 -t rsa -f /home/$SSH_USERNAME/.ssh/id_rsa -q -N ""
-
-echo "INFO: Set ownership and permission of .ssh directory"
-chown $SSH_USERNAME /home/$SSH_USERNAME/.ssh
-chmod 700 /home/$SSH_USERNAME/.ssh
 
 # Check for loglevel and replace line in sshd_config
 if [ -n "$LOGLEVEL" ]; then

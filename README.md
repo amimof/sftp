@@ -36,7 +36,7 @@ $ docker run \
 $ docker run \
     -p 22:22 \
     -e SSH_USERNAME=sftpuser \
-    -v ~/.ssh/id_rsa.pub:/home/sftpuser/.ssh/id_rsa.pub \
+    -v ~/.ssh/id_rsa.pub:/home/sftpuser/.ssh/keys/id_rsa.pub \
     amimof/sftp:latest
 ```
 
@@ -54,3 +54,28 @@ $ docker run \
 ```
 
 **NOTE!** The host keys are placed in the non-default location of `/etc/ssh/host_keys/` so that you can mount your host keys using a `Kubernetes Secret`. If the secret is mounted on the host key's *default* location, `/etc/ssh/`, all other files in that directory would be overwritten, including `sshd_config` which would prevent the ssh server from starting correctly.
+
+### Specify SSH Host Keys and use key authentication
+´´´
+$ docker run \
+    -p 22:22 \
+    -e SSH_USERNAME=sftpuser \
+    -e SSH_GENERATE_HOSTKEYS=false \
+    -v ~/.ssh/id_rsa.pub:/home/sftpuser/.ssh/keys/id_rsa.pub \
+    -v ~/ssh_host_ed25519_key:/etc/ssh/host_keys/ssh_host_ed25519_key \
+    -v ~/ssh_host_rsa_key:/etc/ssh/host_keys/ssh_host_rsa_key \
+    amimof/sftp:latest
+´´´
+
+### Generating keys
+rsa:
+`ssh-keygen -t rsa -b 4096 -f ~/mykeys/ssh_host_rsa_key`
+
+dsa:
+`ssh-keygen -t dsa -f ~/mykeys/ssh_host_rsa_key
+
+ecdsa:
+`ssh-keygen -t ecdsa -f ~/mykeys/ssh_host_rsa_key`
+
+ed25519:
+`ssh-keygen -t ed25519 -f ~/mykeys/ssh_host_rsa_key`
