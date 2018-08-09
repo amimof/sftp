@@ -42,6 +42,12 @@ else
   sed -i "s/PasswordAuthentication\s[^ ]*/PasswordAuthentication yes/g" /etc/ssh/sshd_config
 fi
 
+# Set Port to listen on
+if [ ! -z "$SSH_PORT" ]; then
+  echo "INFO: Setting Port to ${SSH_PORT}"
+  sed -i "s/Port\s[^ ]*/Port ${SSH_PORT}/g" /etc/ssh/sshd_config
+fi
+
 # Change ownership and permissions of users home root dir
 echo "INFO: Change ownership and permissions of home directory"
 chown root:root /home/$SSH_USERNAME

@@ -1,4 +1,5 @@
 Protocol 2
+Port 22
 UseDNS no
 PermitRootLogin no
 X11Forwarding no

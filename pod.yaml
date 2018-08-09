@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sftp
+spec:
+  containers:
+  - name: sftp
+    image: amimof/sftp
+    env:
+    - name: SSH_USERNAME
+      value: "beyonce"
+    - name: SSH_PASSWORD
+      value: "knowles"
+    ports:
+    - containerPort: 22
